@@ -4,12 +4,6 @@ variable "name" {
   default     = "main"
 }
 
-variable "region" {
-  description = "AWS region in which to create resources."
-  type        = string
-  default     = "us-west-2"
-}
-
 variable "vpc_cidr" {
   description = "CIDR block for the VPC."
   type        = string
@@ -33,8 +27,8 @@ variable "compute_subnet_cidrs" {
   default     = ["10.20.0.0/23", "10.20.2.0/23"]
 
   validation {
-    condition     = length(var.compute_subnet_cidrs) == 2
-    error_message = "Exactly 2 compute subnet CIDRs must be provided (one per AZ)."
+    condition     = length(var.compute_subnet_cidrs) == 2 && alltrue([for cidr in var.compute_subnet_cidrs : can(cidrnetmask(cidr)) && split("/", cidr)[1] == "23"])
+    error_message = "Exactly 2 compute subnet CIDRs must be provided (one per AZ), and each must be a /23."
   }
 }
 
@@ -44,8 +38,8 @@ variable "rds_subnet_cidrs" {
   default     = ["10.20.4.0/23", "10.20.6.0/23"]
 
   validation {
-    condition     = length(var.rds_subnet_cidrs) == 2
-    error_message = "Exactly 2 RDS subnet CIDRs must be provided (one per AZ)."
+    condition     = length(var.rds_subnet_cidrs) == 2 && alltrue([for cidr in var.rds_subnet_cidrs : can(cidrnetmask(cidr)) && split("/", cidr)[1] == "23"])
+    error_message = "Exactly 2 RDS subnet CIDRs must be provided (one per AZ), and each must be a /23."
   }
 }
 
@@ -55,8 +49,8 @@ variable "public_subnet_cidrs" {
   default     = ["10.20.8.0/23", "10.20.10.0/23"]
 
   validation {
-    condition     = length(var.public_subnet_cidrs) == 2
-    error_message = "Exactly 2 public subnet CIDRs must be provided (one per AZ)."
+    condition     = length(var.public_subnet_cidrs) == 2 && alltrue([for cidr in var.public_subnet_cidrs : can(cidrnetmask(cidr)) && split("/", cidr)[1] == "23"])
+    error_message = "Exactly 2 public subnet CIDRs must be provided (one per AZ), and each must be a /23."
   }
 }
 
