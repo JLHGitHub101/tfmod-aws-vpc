@@ -7,6 +7,10 @@ locals {
     ManagedBy = "terraform"
     Module    = "tfmod-aws-vpc"
   })
+
+  public_subnets  = zipmap(var.availability_zones, var.public_subnet_cidrs)
+  compute_subnets = zipmap(var.availability_zones, var.compute_subnet_cidrs)
+  rds_subnets     = zipmap(var.availability_zones, var.rds_subnet_cidrs)
 }
 
 # ---------------------------------------------------------------------------
@@ -40,15 +44,15 @@ resource "aws_internet_gateway" "this" {
 # ---------------------------------------------------------------------------
 
 resource "aws_subnet" "public" {
-  count = length(var.availability_zones)
+  for_each = local.public_subnets
 
   vpc_id                  = aws_vpc.this.id
-  cidr_block              = var.public_subnet_cidrs[count.index]
-  availability_zone       = var.availability_zones[count.index]
+  cidr_block              = each.value
+  availability_zone       = each.key
   map_public_ip_on_launch = true
 
   tags = merge(local.common_tags, {
-    Name = "${var.name}-public-${var.availability_zones[count.index]}"
+    Name = "${var.name}-public-${each.key}"
     Tier = "public"
   })
 }
@@ -58,14 +62,14 @@ resource "aws_subnet" "public" {
 # ---------------------------------------------------------------------------
 
 resource "aws_subnet" "compute" {
-  count = length(var.availability_zones)
+  for_each = local.compute_subnets
 
   vpc_id            = aws_vpc.this.id
-  cidr_block        = var.compute_subnet_cidrs[count.index]
-  availability_zone = var.availability_zones[count.index]
+  cidr_block        = each.value
+  availability_zone = each.key
 
   tags = merge(local.common_tags, {
-    Name = "${var.name}-compute-${var.availability_zones[count.index]}"
+    Name = "${var.name}-compute-${each.key}"
     Tier = "compute"
   })
 }
@@ -75,14 +79,14 @@ resource "aws_subnet" "compute" {
 # ---------------------------------------------------------------------------
 
 resource "aws_subnet" "rds" {
-  count = length(var.availability_zones)
+  for_each = local.rds_subnets
 
   vpc_id            = aws_vpc.this.id
-  cidr_block        = var.rds_subnet_cidrs[count.index]
-  availability_zone = var.availability_zones[count.index]
+  cidr_block        = each.value
+  availability_zone = each.key
 
   tags = merge(local.common_tags, {
-    Name = "${var.name}-rds-${var.availability_zones[count.index]}"
+    Name = "${var.name}-rds-${each.key}"
     Tier = "rds"
   })
 }
@@ -117,22 +121,22 @@ resource "aws_route_table" "private" {
 # ---------------------------------------------------------------------------
 
 resource "aws_route_table_association" "public" {
-  count = length(var.availability_zones)
+  for_each = aws_subnet.public
 
-  subnet_id      = aws_subnet.public[count.index].id
+  subnet_id      = each.value.id
   route_table_id = aws_route_table.public.id
 }
 
 resource "aws_route_table_association" "compute" {
-  count = length(var.availability_zones)
+  for_each = aws_subnet.compute
 
-  subnet_id      = aws_subnet.compute[count.index].id
+  subnet_id      = each.value.id
   route_table_id = aws_route_table.private.id
 }
 
 resource "aws_route_table_association" "rds" {
-  count = length(var.availability_zones)
+  for_each = aws_subnet.rds
 
-  subnet_id      = aws_subnet.rds[count.index].id
+  subnet_id      = each.value.id
   route_table_id = aws_route_table.private.id
 }

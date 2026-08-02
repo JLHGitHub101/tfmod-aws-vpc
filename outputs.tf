@@ -14,18 +14,18 @@ output "internet_gateway_id" {
 }
 
 output "public_subnet_ids" {
-  description = "List of IDs of the public subnets (index 0 = first AZ, index 1 = second AZ)."
-  value       = aws_subnet.public[*].id
+  description = "Map of AZ to public subnet ID."
+  value       = { for az, s in aws_subnet.public : az => s.id }
 }
 
 output "compute_subnet_ids" {
-  description = "List of IDs of the compute (private) subnets (index 0 = first AZ, index 1 = second AZ)."
-  value       = aws_subnet.compute[*].id
+  description = "Map of AZ to compute subnet ID."
+  value       = { for az, s in aws_subnet.compute : az => s.id }
 }
 
 output "rds_subnet_ids" {
-  description = "List of IDs of the RDS (private) subnets (index 0 = first AZ, index 1 = second AZ)."
-  value       = aws_subnet.rds[*].id
+  description = "Map of AZ to RDS subnet ID."
+  value       = { for az, s in aws_subnet.rds : az => s.id }
 }
 
 output "public_route_table_id" {
