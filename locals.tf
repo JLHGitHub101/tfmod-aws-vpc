@@ -1,5 +1,5 @@
 locals {
-  common_tags = merge({
+  default_tags = merge({
     ManagedBy = "terraform"
     Module    = "tfmod-aws-vpc"
   }, var.tags)

@@ -6,7 +6,7 @@ resource "aws_subnet" "public" {
   availability_zone       = each.key
   map_public_ip_on_launch = true
 
-  tags = merge(local.common_tags, {
+  tags = merge(local.default_tags, {
     Name = "${var.name}-public-${each.key}"
     Tier = "public"
   })
@@ -19,7 +19,7 @@ resource "aws_subnet" "compute" {
   cidr_block        = each.value
   availability_zone = each.key
 
-  tags = merge(local.common_tags, {
+  tags = merge(local.default_tags, {
     Name = "${var.name}-compute-${each.key}"
     Tier = "compute"
   })
@@ -32,7 +32,7 @@ resource "aws_subnet" "rds" {
   cidr_block        = each.value
   availability_zone = each.key
 
-  tags = merge(local.common_tags, {
+  tags = merge(local.default_tags, {
     Name = "${var.name}-rds-${each.key}"
     Tier = "rds"
   })

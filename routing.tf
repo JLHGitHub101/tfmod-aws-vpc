@@ -6,7 +6,7 @@ resource "aws_route_table" "public" {
     gateway_id = aws_internet_gateway.this.id
   }
 
-  tags = merge(local.common_tags, {
+  tags = merge(local.default_tags, {
     Name = "${var.name}-public-rt"
   })
 }
@@ -14,7 +14,7 @@ resource "aws_route_table" "public" {
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.this.id
 
-  tags = merge(local.common_tags, {
+  tags = merge(local.default_tags, {
     Name = "${var.name}-private-rt"
   })
 }
